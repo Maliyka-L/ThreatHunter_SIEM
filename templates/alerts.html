@@ -34,9 +34,11 @@
 
             <tr>
                 <th>Time</th>
-                <th>IP</th>
+                <th>Source</th>
+                <th>IP / Host / User</th>
                 <th>Type</th>
                 <th>Severity</th>
+                <th>MITRE</th>
                 <th>Reason</th>
             </tr>
 
@@ -50,11 +52,15 @@
 
                 <td>{{ alert.time }}</td>
 
-                <td>{{ alert.ip }}</td>
+                <td>{{ alert.source }}</td>
+
+                <td>{{ alert.ip or alert.host or alert.username or "-" }}</td>
 
                 <td>{{ alert.type }}</td>
 
                 <td>{{ alert.severity }}</td>
+
+                <td>{{ alert.mitre or "-" }}</td>
 
                 <td>{{ alert.reason }}</td>
 
@@ -63,7 +69,7 @@
             {% else %}
 
             <tr>
-                <td colspan="5" class="text-center text-muted">No alerts detected.</td>
+                <td colspan="7" class="text-center text-muted">No alerts detected.</td>
             </tr>
 
             {% endfor %}
