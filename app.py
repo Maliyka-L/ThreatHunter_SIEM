@@ -1,16 +1,17 @@
 from flask import Flask, render_template
+import os
 
 from modules.log_analysis import run_detection
 
 app = Flask(__name__)
 
+WEB_LOG_PATH = os.environ.get("SIEM_WEB_LOG", "logs/web/sample.log")
+
 
 @app.route("/")
 def dashboard():
 
-    alerts = run_detection(
-        "log-parser-alerting-tool/logs/sample.log"
-    )
+    alerts = run_detection(WEB_LOG_PATH)
 
     metrics = {
         "total_alerts": len(alerts),
@@ -38,9 +39,7 @@ def dashboard():
 @app.route("/alerts")
 def alerts_page():
 
-    alerts = run_detection(
-        "log-parser-alerting-tool/logs/sample.log"
-    )
+    alerts = run_detection(WEB_LOG_PATH)
 
     return render_template(
         "alerts.html",
@@ -49,4 +48,5 @@ def alerts_page():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.environ.get("FLASK_DEBUG") == "1"
+    app.run(debug=debug_mode)

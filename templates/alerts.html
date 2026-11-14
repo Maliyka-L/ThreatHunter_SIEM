@@ -33,6 +33,7 @@
         <thead>
 
             <tr>
+                <th>Time</th>
                 <th>IP</th>
                 <th>Type</th>
                 <th>Severity</th>
@@ -47,6 +48,8 @@
 
             <tr>
 
+                <td>{{ alert.time }}</td>
+
                 <td>{{ alert.ip }}</td>
 
                 <td>{{ alert.type }}</td>
@@ -55,6 +58,12 @@
 
                 <td>{{ alert.reason }}</td>
 
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="5" class="text-center text-muted">No alerts detected.</td>
             </tr>
 
             {% endfor %}
