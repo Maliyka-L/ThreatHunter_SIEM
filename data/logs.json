@@ -1,0 +1,20 @@
+[
+    {
+        "ip": "192.168.1.20",
+        "type": "bruteforce",
+        "severity": "high",
+        "reason": "5 failed login attempts"
+    },
+    {
+        "ip": "192.168.1.55",
+        "type": "admin_access",
+        "severity": "medium",
+        "reason": "Accessed /admin page"
+    },
+    {
+        "ip": "10.10.10.15",
+        "type": "endpoint_scan",
+        "severity": "high",
+        "reason": "12 unique endpoints scanned"
+    }
+]
