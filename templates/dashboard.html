@@ -103,11 +103,32 @@
 
         </div>
 
+        <div class="col-md">
+
+            <div class="card">
+
+                <div class="card-body text-center">
+
+                    <h6>Malicious IPs</h6>
+
+                    <h2>{{ metrics.malicious_ips }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
     <a href="/alerts"
        class="btn btn-primary mb-4">
         View Alerts
+    </a>
+
+    <a href="/threats"
+       class="btn btn-outline-primary mb-4">
+        Threat Intelligence
     </a>
 
     <div class="card">
@@ -130,6 +151,7 @@
                         <th>Alert Type</th>
                         <th>Severity</th>
                         <th>MITRE</th>
+                        <th>Threat Intel</th>
                         <th>Reason</th>
 
                     </tr>
@@ -148,6 +170,7 @@
                         <td>{{ alert.type }}</td>
                         <td>{{ alert.severity }}</td>
                         <td>{{ alert.mitre or "-" }}</td>
+                        <td>{% if alert.threat_intel and alert.threat_intel.status == "checked" %}{{ alert.threat_intel.severity }} ({{ alert.threat_intel.risk_score }}){% elif alert.threat_intel and alert.threat_intel.status == "private" %}private{% else %}-{% endif %}</td>
                         <td>{{ alert.reason }}</td>
 
                     </tr>
@@ -155,7 +178,7 @@
                     {% else %}
 
                     <tr>
-                        <td colspan="7" class="text-center text-muted">No alerts detected.</td>
+                        <td colspan="8" class="text-center text-muted">No alerts detected.</td>
                     </tr>
 
                     {% endfor %}

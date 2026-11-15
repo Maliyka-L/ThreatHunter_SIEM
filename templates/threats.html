@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ThreatHunter SIEM Threat Intelligence</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="container py-5">
+
+    <h1 class="mb-4">
+        Threat Intelligence
+    </h1>
+
+    <a href="/"
+       class="btn btn-primary mb-4">
+        Dashboard
+    </a>
+
+    <a href="/alerts"
+       class="btn btn-outline-primary mb-4">
+        View Alerts
+    </a>
+
+    <p class="text-muted">
+        Every IP seen in an alert, checked against VirusTotal and AbuseIPDB. Results are cached for 24 hours.
+    </p>
+
+    <table class="table table-striped">
+
+        <thead>
+
+            <tr>
+                <th>IP</th>
+                <th>Status</th>
+                <th>Risk Score</th>
+                <th>Severity</th>
+                <th>VirusTotal Malicious</th>
+                <th>AbuseIPDB Score</th>
+                <th>Country</th>
+                <th>Reports</th>
+                <th>MITRE</th>
+                <th>Alerts</th>
+                <th>Last Checked</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for item in indicators %}
+
+            <tr>
+
+                <td>{{ item.ip }}</td>
+
+                <td>
+                    {% if item.status == "checked" %}Checked
+                    {% elif item.status == "private" %}Private IP (not looked up)
+                    {% elif item.status == "not_configured" %}API keys not set
+                    {% elif item.status == "pending" %}Waiting (lookup limit reached)
+                    {% elif item.status == "error" %}Lookup failed
+                    {% else %}{{ item.status }}{% endif %}
+                </td>
+
+                <td>{{ item.risk_score if item.status == "checked" else "-" }}</td>
+
+                <td>{{ item.severity if item.status == "checked" else "-" }}</td>
+
+                <td>{{ item.virustotal.malicious if item.virustotal and item.virustotal.malicious is defined else "-" }}</td>
+
+                <td>{{ item.abuseipdb.abuse_score if item.abuseipdb and item.abuseipdb.abuse_score is defined else "-" }}</td>
+
+                <td>{{ item.abuseipdb.country if item.abuseipdb and item.abuseipdb.country else "-" }}</td>
+
+                <td>{{ item.abuseipdb.reports if item.abuseipdb and item.abuseipdb.reports is defined else "-" }}</td>
+
+                <td>
+                    {% if item.mitre %}
+                        {% for technique in item.mitre %}{{ technique.id }} {{ technique.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    {% else %}-{% endif %}
+                </td>
+
+                <td>{{ item.alerts }}</td>
+
+                <td>{{ item.checked or "-" }}</td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="11" class="text-center text-muted">No IPs to check.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</body>
+</html>
