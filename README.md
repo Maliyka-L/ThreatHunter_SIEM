@@ -26,6 +26,8 @@ Scans web server logs and raises alerts using six detection rules:
 
 Thresholds, the allow list, severities and which rules are switched on are all set in `config/log_analysis.json`. Duplicate alerts for the same IP and rule are merged, keeping the strongest one.
 
+![Log Analysis alerts](screenshots/log_analysis_tool.png)
+
 ## Alert Engine
 
 Analyses host and authentication events (logins, process creation, account changes) and maps every detection to MITRE ATT&CK:
@@ -52,6 +54,8 @@ Every IP address found in an alert is checked against **VirusTotal** and **Abuse
 
 The **Threat Intelligence** page lists every IP with its status, risk score, VirusTotal detections, AbuseIPDB score, country, report count, MITRE techniques and how many alerts it appears in.
 
+![Threat Intelligence page](screenshots/threat_intel.png)
+
 Settings such as the cache time, the lookup limit and which risk levels raise an alert are in `config/threat_intelligence.json`.
 
 ### API keys
@@ -76,6 +80,8 @@ High and Critical alerts can be turned into cases in [Investigation_Manager](htt
 - **If something goes wrong** (Investigation Manager isn't running, the API key is wrong or its API is switched off), the SIEM carries on and shows the reason
 
 Which severities become cases is set in `config/case_management.json`.
+
+![Cases created in Investigation Manager](screenshots/case_management.png)
 
 ### Connecting to Investigation Manager
 
@@ -177,6 +183,7 @@ ThreatHunter_SIEM/
 ├── data/
 │   ├── indicators.json        # threat intelligence cache
 │   └── cases.json             # which alerts already have a case
+├── screenshots/               # images used in this README
 └── templates/
     ├── dashboard.html
     ├── alerts.html
