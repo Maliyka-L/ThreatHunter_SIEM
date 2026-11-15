@@ -1,7 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, redirect, render_template, request, url_for
 import os
 
-from modules import alert_engine, log_analysis, threat_intelligence
+from modules import alert_engine, case_management, log_analysis, threat_intelligence
 
 app = Flask(__name__)
 
@@ -17,6 +17,7 @@ def collect_alerts():
 
     alerts.sort(key=lambda a: a.get("time", ""))
     alerts.sort(key=lambda a: SEVERITY_ORDER.get(a.get("severity"), 0), reverse=True)
+    case_management.attach_cases(alerts)
 
     return alerts, intel
 
@@ -47,13 +48,16 @@ def dashboard():
 
         "malicious_ips": len(
             [ip for ip, r in intel.items() if r.get("severity") in ("HIGH", "CRITICAL")]
-        )
+        ),
+
+        "cases": len(case_management.load_cases())
     }
 
     return render_template(
         "dashboard.html",
         metrics=metrics,
-        alerts=alerts
+        alerts=alerts,
+        im_url=case_management.get_settings()[0]
     )
 
 
@@ -64,7 +68,8 @@ def alerts_page():
 
     return render_template(
         "alerts.html",
-        alerts=alerts
+        alerts=alerts,
+        im_url=case_management.get_settings()[0]
     )
 
 
@@ -90,6 +95,49 @@ def threats_page():
     )
 
 
+@app.route("/cases")
+def cases_page():
+
+    alerts, intel = collect_alerts()
+    im_url, im_key = case_management.get_settings()
+
+    cases = sorted(
+        case_management.load_cases().values(),
+        key=lambda c: c.get("created", ""),
+        reverse=True
+    )
+
+    waiting = [
+        a for a in case_management.eligible_alerts(alerts)
+        if not a.get("case_id")
+    ]
+
+    result = {
+        "created": request.args.get("created"),
+        "already_open": request.args.get("already_open"),
+        "error": request.args.get("error", "")
+    }
+
+    return render_template(
+        "cases.html",
+        cases=cases,
+        waiting=waiting,
+        im_url=im_url,
+        key_set=bool(im_key),
+        result=result
+    )
+
+
+@app.route("/cases/sync", methods=["POST"])
+def sync_cases():
+
+    alerts, intel = collect_alerts()
+    summary = case_management.create_cases(alerts)
+
+    return redirect(url_for("cases_page", **summary))
+
+
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_DEBUG") == "1"
-    app.run(debug=debug_mode)
+    port = int(os.environ.get("SIEM_PORT", "5001"))
+    app.run(debug=debug_mode, port=port)

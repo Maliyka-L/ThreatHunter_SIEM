@@ -119,6 +119,22 @@
 
         </div>
 
+        <div class="col-md">
+
+            <div class="card">
+
+                <div class="card-body text-center">
+
+                    <h6>Cases</h6>
+
+                    <h2>{{ metrics.cases }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
     <a href="/alerts"
@@ -129,6 +145,11 @@
     <a href="/threats"
        class="btn btn-outline-primary mb-4">
         Threat Intelligence
+    </a>
+
+    <a href="/cases"
+       class="btn btn-outline-primary mb-4">
+        Cases
     </a>
 
     <div class="card">
@@ -153,6 +174,7 @@
                         <th>MITRE</th>
                         <th>Threat Intel</th>
                         <th>Reason</th>
+                        <th>Case</th>
 
                     </tr>
 
@@ -172,13 +194,14 @@
                         <td>{{ alert.mitre or "-" }}</td>
                         <td>{% if alert.threat_intel and alert.threat_intel.status == "checked" %}{{ alert.threat_intel.severity }} ({{ alert.threat_intel.risk_score }}){% elif alert.threat_intel and alert.threat_intel.status == "private" %}private{% else %}-{% endif %}</td>
                         <td>{{ alert.reason }}</td>
+                        <td>{% if alert.case_id %}<a href="{{ im_url }}/case/{{ alert.case_id }}" target="_blank">{{ alert.case_id }}</a>{% else %}-{% endif %}</td>
 
                     </tr>
 
                     {% else %}
 
                     <tr>
-                        <td colspan="8" class="text-center text-muted">No alerts detected.</td>
+                        <td colspan="9" class="text-center text-muted">No alerts detected.</td>
                     </tr>
 
                     {% endfor %}
