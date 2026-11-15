@@ -33,6 +33,11 @@
         Threat Intelligence
     </a>
 
+    <a href="/cases"
+       class="btn btn-outline-primary mb-4">
+        Cases
+    </a>
+
     <table class="table table-striped">
 
         <thead>
@@ -46,6 +51,7 @@
                 <th>MITRE</th>
                 <th>Threat Intel</th>
                 <th>Reason</th>
+                <th>Case</th>
             </tr>
 
         </thead>
@@ -72,12 +78,14 @@
 
                 <td>{{ alert.reason }}</td>
 
+                <td>{% if alert.case_id %}<a href="{{ im_url }}/case/{{ alert.case_id }}" target="_blank">{{ alert.case_id }}</a>{% else %}-{% endif %}</td>
+
             </tr>
 
             {% else %}
 
             <tr>
-                <td colspan="8" class="text-center text-muted">No alerts detected.</td>
+                <td colspan="9" class="text-center text-muted">No alerts detected.</td>
             </tr>
 
             {% endfor %}

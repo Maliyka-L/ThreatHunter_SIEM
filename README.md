@@ -9,7 +9,7 @@ A Security Information and Event Management (SIEM) project built with Python and
 | Log Analysis | ✅ Integrated | [log_parser_alerting_tool](https://github.com/Maliyka-L/log_parser_alerting_tool) |
 | Alert Engine | ✅ Integrated | [alert_engine](https://github.com/Maliyka-L/alert_engine) |
 | Threat Intelligence | ✅ Integrated | [Threat_Intelligence_module](https://github.com/Maliyka-L/Threat_Intelligence_module) |
-| Case Management | ⬜ Planned | [Investigation_Manager](https://github.com/Maliyka-L/Investigation_Manager) |
+| Case Management | ✅ Integrated | [Investigation_Manager](https://github.com/Maliyka-L/Investigation_Manager) |
 
 ## Log Analysis
 
@@ -65,6 +65,38 @@ ABUSEIPDB_API_KEY=your-abuseipdb-key
 
 The `.env` file is in `.gitignore`, so your keys never go to GitHub. Without keys, everything else still works and public IPs show "API keys not set".
 
+## Case Management
+
+High and Critical alerts can be turned into cases in [Investigation_Manager](https://github.com/Maliyka-L/Investigation_Manager), using its API.
+
+- The **Cases** page lists every High and Critical alert that doesn't have a case yet
+- Clicking **Create Cases** sends each one to Investigation Manager, with a title, severity, description, the IP as an IOC and any MITRE ATT&CK techniques
+- **Each alert only becomes one case.** The SIEM remembers which alerts already have a case in `data/cases.json`, so pressing the button again won't create duplicates
+- Every alert with a case shows its case ID on the dashboard and alerts page, linking straight to the case in Investigation Manager
+- **If something goes wrong** (Investigation Manager isn't running, the API key is wrong or its API is switched off), the SIEM carries on and shows the reason
+
+Which severities become cases is set in `config/case_management.json`.
+
+### Connecting to Investigation Manager
+
+Investigation Manager runs on port 5000, so the SIEM runs on port **5001**.
+
+1. Pick an API key (any long random text) and add it to the SIEM's `.env`:
+
+   ```
+   IM_URL=http://127.0.0.1:5000
+   IM_API_KEY=your-chosen-key
+   ```
+
+2. Start Investigation Manager in its own terminal with the **same** key:
+
+   ```powershell
+   $env:IM_API_KEY="your-chosen-key"   # Windows PowerShell
+   python app.py
+   ```
+
+3. Start the SIEM in a second terminal, open the **Cases** page and click **Create Cases**.
+
 ## How alerts come together
 
 Both modules produce alerts in the same standard format, so the SIEM can show them side by side:
@@ -81,7 +113,7 @@ Both modules produce alerts in the same standard format, so the SIEM can show th
 
 Alert Engine alerts also carry extra details where relevant, such as the username, host or command, and every alert with an IP carries its threat intelligence result.
 
-The dashboard shows totals for each severity and the number of malicious IPs, and the alerts page lists every alert from all modules, most severe first.
+The dashboard shows totals for each severity, the number of malicious IPs and the number of cases created, and the alerts page lists every alert from all modules, most severe first.
 
 ## Running it locally
 
@@ -96,7 +128,7 @@ copy .env.example .env       # then add your API keys to .env
 python app.py
 ```
 
-Then open http://127.0.0.1:5000 in your browser.
+Then open http://127.0.0.1:5001 in your browser. To use a different port, set `SIEM_PORT` before starting it.
 
 By default the SIEM analyses `logs/web/sample.log` (web server logs) and `logs/host/sample_logs.json` (host events). To analyse different logs, set `SIEM_WEB_LOG` or `SIEM_HOST_LOG` before starting it:
 
@@ -132,7 +164,8 @@ ThreatHunter_SIEM/
 ├── config/
 │   ├── log_analysis.json      # web log rule settings
 │   ├── alert_engine.json      # host event rule settings
-│   └── threat_intelligence.json  # cache and lookup settings
+│   ├── threat_intelligence.json  # cache and lookup settings
+│   └── case_management.json   # which alerts become cases
 ├── logs/
 │   ├── web/                   # sample web server logs
 │   └── host/                  # sample host events
@@ -140,13 +173,15 @@ ThreatHunter_SIEM/
 │   ├── log_analysis.py        # web log detection
 │   ├── alert_engine.py        # host event detection and correlation
 │   ├── threat_intelligence.py # VirusTotal and AbuseIPDB enrichment
-│   └── case_management.py
+│   └── case_management.py     # sends alerts to Investigation Manager
 ├── data/
-│   └── indicators.json        # threat intelligence cache
+│   ├── indicators.json        # threat intelligence cache
+│   └── cases.json             # which alerts already have a case
 └── templates/
     ├── dashboard.html
     ├── alerts.html
-    └── threats.html
+    ├── threats.html
+    └── cases.html
 ```
 
 ## Licence
