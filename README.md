@@ -8,7 +8,7 @@ A Security Information and Event Management (SIEM) project built with Python and
 |---|---|---|
 | Log Analysis | ✅ Integrated | [log_parser_alerting_tool](https://github.com/Maliyka-L/log_parser_alerting_tool) |
 | Alert Engine | ✅ Integrated | [alert_engine](https://github.com/Maliyka-L/alert_engine) |
-| Threat Intelligence | ⬜ Planned | [Threat_Intelligence_module](https://github.com/Maliyka-L/Threat_Intelligence_module) |
+| Threat Intelligence | ✅ Integrated | [Threat_Intelligence_module](https://github.com/Maliyka-L/Threat_Intelligence_module) |
 | Case Management | ⬜ Planned | [Investigation_Manager](https://github.com/Maliyka-L/Investigation_Manager) |
 
 ## Log Analysis
@@ -40,13 +40,38 @@ Analyses host and authentication events (logins, process creation, account chang
 
 Thresholds, the correlation window, the malicious IP list and which rules are switched on are set in `config/alert_engine.json`.
 
+## Threat Intelligence
+
+Every IP address found in an alert is checked against **VirusTotal** and **AbuseIPDB**, then given a risk score from 0 to 100 and a level (Low, Medium, High or Critical), with likely MITRE ATT&CK techniques.
+
+- **Private IPs** (such as `10.x.x.x` and `192.168.x.x`) are recognised and skipped, because they can't be looked up
+- **Results are cached** in `data/indicators.json` for 24 hours, so each IP is only looked up once
+- **At most 4 IPs are looked up per page load**, to stay within VirusTotal's free limit of 4 lookups a minute; any others wait for the next refresh
+- **Any IP rated High or Critical** raises a new Critical alert from `threat_intelligence`
+- **If a lookup fails** (no keys, a bad key or no internet), the SIEM carries on and shows the reason, and the IP is tried again next time
+
+The **Threat Intelligence** page lists every IP with its status, risk score, VirusTotal detections, AbuseIPDB score, country, report count, MITRE techniques and how many alerts it appears in.
+
+Settings such as the cache time, the lookup limit and which risk levels raise an alert are in `config/threat_intelligence.json`.
+
+### API keys
+
+Both services have free accounts. Copy `.env.example` to `.env` and add your keys:
+
+```
+VT_API_KEY=your-virustotal-key
+ABUSEIPDB_API_KEY=your-abuseipdb-key
+```
+
+The `.env` file is in `.gitignore`, so your keys never go to GitHub. Without keys, everything else still works and public IPs show "API keys not set".
+
 ## How alerts come together
 
 Both modules produce alerts in the same standard format, so the SIEM can show them side by side:
 
 | Field | Meaning |
 |---|---|
-| `source` | Which module raised it (`log_analysis` or `alert_engine`) |
+| `source` | Which module raised it (`log_analysis`, `alert_engine` or `threat_intelligence`) |
 | `time` | When the activity happened |
 | `ip` | The IP address involved, if any |
 | `type` | The detection rule |
@@ -54,9 +79,9 @@ Both modules produce alerts in the same standard format, so the SIEM can show th
 | `reason` | What was detected |
 | `mitre` | MITRE ATT&CK technique, where mapped |
 
-Alert Engine alerts also carry extra details where relevant, such as the username, host or command.
+Alert Engine alerts also carry extra details where relevant, such as the username, host or command, and every alert with an IP carries its threat intelligence result.
 
-The dashboard shows totals for each severity, and the alerts page lists every alert from both modules, most severe first.
+The dashboard shows totals for each severity and the number of malicious IPs, and the alerts page lists every alert from all modules, most severe first.
 
 ## Running it locally
 
@@ -67,6 +92,7 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS / Linux
 pip install -r requirements.txt
+copy .env.example .env       # then add your API keys to .env
 python app.py
 ```
 
@@ -105,19 +131,22 @@ ThreatHunter_SIEM/
 ├── requirements.txt
 ├── config/
 │   ├── log_analysis.json      # web log rule settings
-│   └── alert_engine.json      # host event rule settings
+│   ├── alert_engine.json      # host event rule settings
+│   └── threat_intelligence.json  # cache and lookup settings
 ├── logs/
 │   ├── web/                   # sample web server logs
 │   └── host/                  # sample host events
 ├── modules/
 │   ├── log_analysis.py        # web log detection
 │   ├── alert_engine.py        # host event detection and correlation
-│   ├── threat_intelligence.py
+│   ├── threat_intelligence.py # VirusTotal and AbuseIPDB enrichment
 │   └── case_management.py
 ├── data/
+│   └── indicators.json        # threat intelligence cache
 └── templates/
     ├── dashboard.html
-    └── alerts.html
+    ├── alerts.html
+    └── threats.html
 ```
 
 ## Licence

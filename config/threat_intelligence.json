@@ -1,0 +1,6 @@
+{
+    "cache_hours": 24,
+    "max_lookups_per_run": 4,
+    "request_timeout": 15,
+    "alert_on_severities": ["HIGH", "CRITICAL"]
+}
